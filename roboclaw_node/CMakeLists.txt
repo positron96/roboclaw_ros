@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(roboclaw_node)
+project(roboclaw)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,6 +54,11 @@ catkin_python_setup()
 #   Message2.msg
 # )
 
+add_message_files(
+  FILES
+  MotorSpeeds.msg
+)
+
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
@@ -68,10 +74,12 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   geometry_msgs
+   nav_msgs
+   std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

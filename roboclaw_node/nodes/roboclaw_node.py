@@ -6,6 +6,7 @@ import diagnostic_updater
 import roboclaw_driver.roboclaw_driver as roboclaw
 import rospy
 import tf
+from roboclaw.msg import MotorSpeeds
 from geometry_msgs.msg import Quaternion, Twist
 from nav_msgs.msg import Odometry
 
@@ -39,10 +40,15 @@ class Node:
         dev_name = rospy.get_param("~dev", "/dev/ttyACM0")
         baud_rate = int(rospy.get_param("~baud", "115200"))
 
-        self.address = int(rospy.get_param("~address", "128"))
-        if self.address > 0x87 or self.address < 0x80:
-            rospy.logfatal("Address out of range")
-            rospy.signal_shutdown("Address out of range")
+        addresses = str(rospy.get_param("~addresses", "128")).split(",")
+        self.addresses = []
+        for addr in addresses:
+            addr = int(addr)
+            if addr > 0x87 or addr < 0x80:
+                rospy.logfatal("Address out of range")
+                rospy.signal_shutdown("Address out of range")
+            self.addresses.append( addr )
+        rospy.loginfo("Addresses: %s" % str(self.addresses) )
 
         # TODO need someway to check if address is correct
         try:
@@ -57,20 +63,21 @@ class Node:
         self.updater.add(diagnostic_updater.
                          FunctionDiagnosticTask("Vitals", self.check_vitals))
 
-        try:
-            version = roboclaw.ReadVersion(self.address)
-        except Exception as e:
-            rospy.logwarn("Problem getting roboclaw version")
-            rospy.logdebug(e)
-            pass
+        for addr in self.addresses:
+            try:
+                version = roboclaw.ReadVersion(addr)
+            except Exception as e:
+                rospy.logwarn("Problem getting roboclaw version from address %d" % addr)
+                rospy.logdebug(e)
+                pass
 
-        if not version[0]:
-            rospy.logwarn("Could not get version from roboclaw")
-        else:
-            rospy.logdebug(repr(version[1]))
+            if not version[0]:
+                rospy.logwarn("Could not get version from roboclaw address %d" % addr)
+            else:
+                rospy.logdebug("Controller %d version is %s" % (addr, repr(version[1]) ) )
 
-        roboclaw.SpeedM1M2(self.address, 0, 0)
-        roboclaw.ResetEncoders(self.address)
+            roboclaw.SpeedM1M2(addr, 0, 0)
+            roboclaw.ResetEncoders(addr)
 
         self.MAX_SPEED = float(rospy.get_param("~max_speed", "2.0"))
         self.TICKS_PER_METER = float(rospy.get_param("~tick_per_meter", "4342.2"))
@@ -81,11 +88,13 @@ class Node:
 
         rospy.Subscriber("cmd_vel", Twist, self.cmd_vel_callback)
 
+        rospy.Subscriber("cmd_motors", MotorSpeeds, self.cmd_motors_callback)
+
         rospy.sleep(1)
 
         rospy.logdebug("dev %s", dev_name)
         rospy.logdebug("baud %d", baud_rate)
-        rospy.logdebug("address %d", self.address)
+        rospy.logdebug("addresses %s", str(self.addresses) )
         rospy.logdebug("max_speed %f", self.MAX_SPEED)
         rospy.logdebug("ticks_per_meter %f", self.TICKS_PER_METER)
         rospy.logdebug("base_width %f", self.BASE_WIDTH)
@@ -94,6 +103,8 @@ class Node:
         rospy.loginfo("Starting motor drive")
         r_time = rospy.Rate(10)
         while not rospy.is_shutdown():
+            r_time.sleep()
+            continue
 
             if (rospy.get_rostime() - self.last_set_speed_time).to_sec() > 1:
                 rospy.loginfo("Did not get command for 1 second, stopping")
@@ -124,13 +135,21 @@ class Node:
                 rospy.logwarn("ReadEncM2 OSError: %d", e.errno)
                 rospy.logdebug(e)
 
-            if ('enc1' in vars()) and ('enc2' in vars()):
+            if enc1 is not None and enc2 is not None:
                 rospy.logdebug(" Encoders %d %d" % (enc1, enc2))
 
                 self.updater.update()
             r_time.sleep()
 
+    def cmd_motors_callback(self, arr):
+        rospy.logwarn( str(arr) )
+
+        if len(arr) != len(self.addresses)*2:
+            rospy.logwarn( "node configured to control %d motors but %d speeds received" % (
+                len(self.addresses), len(arr) )  )            
+
     def cmd_vel_callback(self, twist):
+        return 
         self.last_set_speed_time = rospy.get_rostime()
 
         linear_x = twist.linear.x
@@ -145,7 +164,7 @@ class Node:
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
 
-        rospy.logdebug("vr_ticks:%d vl_ticks: %d", vr_ticks, vl_ticks)
+        rospy.loginfo("vr_ticks:%d vl_ticks: %d", vr_ticks, vl_ticks)
 
         try:
             # This is a hack way to keep a poorly tuned PID from making noise at speed 0
@@ -181,17 +200,18 @@ class Node:
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
         rospy.loginfo("Shutting down")
-        try:
-            roboclaw.ForwardM1(self.address, 0)
-            roboclaw.ForwardM2(self.address, 0)
-        except OSError:
-            rospy.logerr("Shutdown did not work trying again")
+        for addr in self.addresses:
             try:
-                roboclaw.ForwardM1(self.address, 0)
-                roboclaw.ForwardM2(self.address, 0)
-            except OSError as e:
-                rospy.logerr("Could not shutdown motors!!!!")
-                rospy.logdebug(e)
+                roboclaw.ForwardM1(addr, 0)
+                roboclaw.ForwardM2(addr, 0)
+            except OSError:
+                rospy.logerr("Shutdown did not work trying again")
+                try:
+                    roboclaw.ForwardM1(self.address, 0)
+                    roboclaw.ForwardM2(self.address, 0)
+                except OSError as e:
+                    rospy.logerr("Could not shutdown motors!!!!")
+                    rospy.logdebug(e)
 
 
 if __name__ == "__main__":
