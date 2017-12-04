@@ -82,9 +82,7 @@ class Node:
             roboclaw.SpeedM1M2(addr, 0, 0)
             roboclaw.ResetEncoders(addr)
 
-        self.MAX_SPEED = float(rospy.get_param("~max_speed", "2.0"))
-        self.TICKS_PER_METER = float(rospy.get_param("~tick_per_meter", "4342.2"))
-        self.BASE_WIDTH = 1.0
+        self.MAX_SPEED = float(rospy.get_param("~max_speed", "6000"))
 
         self.last_set_speed_time = rospy.get_rostime()
 
@@ -96,8 +94,6 @@ class Node:
         rospy.logdebug("baud %d", baud_rate)
         rospy.logdebug("addresses %s", str(self.addresses) )
         rospy.logdebug("max_speed %f", self.MAX_SPEED)
-        rospy.logdebug("ticks_per_meter %f", self.TICKS_PER_METER)
-        rospy.logdebug("base_width %f", self.BASE_WIDTH)
 
     def run(self):
         rospy.loginfo("Starting motor drive")
