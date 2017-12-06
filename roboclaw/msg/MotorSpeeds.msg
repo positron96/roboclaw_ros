@@ -1,4 +1,4 @@
-# wheel speeds in ticks per seconds. 
-# Used when there are more that two driven wheels.
+# wheel speeds in radians per second. 
+# Used when there are more than two driven wheels.
  
-int16[] Speeds
+float32[] Speeds
