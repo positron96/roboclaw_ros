@@ -3,25 +3,36 @@
 
     <arg name="dev" default="/dev/ttyACM0"/>
     <arg name="baud" default="115200"/>
-    <arg name="addresses" default="128"/>
-    <arg name="max_speed" default="2.0"/>
-    <arg name="ticks_per_meter" default="4342.2"/>
-    <arg name="base_width" default="0.315"/>
-    <arg name="run_diag" default="true"/>
+    <arg name="addresses" default="128,129"/>
+    <arg name="max_speed" default="0"/>
+    <arg name="ticks_per_rotation" default="663"/>
+    <arg name="base_width" default="1"/>
 
-    <node if="$(arg run_diag)" pkg="roboclaw" type="roboclaw_node.py" name="roboclaw_node" output="screen">
+    <arg name="wheel_radius" default="0.2"/>
+    <arg name="wheelbase" default="1"/>
+    <arg name="track" default="1"/>
+    <arg name="rate" default="10"/>
+
+    <node pkg="roboclaw" type="roboclaw_node.py" name="roboclaw_node" output="screen">
         <param name="~dev" value="$(arg dev)"/>
         <param name="~baud" value="$(arg baud)"/>
         <param name="~addresses" value="$(arg addresses)"/>
         <param name="~max_speed" value="$(arg max_speed)"/>
-        <param name="~ticks_per_meter" value="$(arg ticks_per_meter)"/>
-        <param name="~base_width" value="$(arg base_width)"/>
+        <param name="~ticks_per_rotation" value="$(arg ticks_per_rotation)"/>
     </node>
 
-    <node pkg="diagnostic_aggregator" type="aggregator_node"
+
+    <node pkg="roboclaw" type="mecanum_wheel_processor.py" name="mecanum_calculator" output="screen">
+        <param name="~wheel_radius" value="$(arg wheel_radius)"/>
+        <param name="~wheelbase" value="$(arg wheelbase)"/>
+        <param name="~track" value="$(arg track)"/>
+        <param name="~rate" value="$(arg rate)"/>
+    </node>
+
+    <!--node pkg="diagnostic_aggregator" type="aggregator_node"
           name="diagnostic_aggregator">
         <rosparam command="load"
                   file="$(find roboclaw)/config/roboclaw_diag.yaml"/>
-    </node>
+    </node-->
 
 </launch>
