@@ -39,7 +39,7 @@ class Node:
         baud_rate = int(rospy.get_param("~baud", "115200"))
 
         self.topic_timeout = int( rospy.get_param("~topic_timeout", "1") )
-        self.TICKS_PER_RADIAN = float(rospy.get_param("~ticks_per_rotation", "663")) / 180 * pi
+        self.TICKS_PER_RADIAN = float(rospy.get_param("~ticks_per_rotation", "663")) / (2*pi)
         self.MAX_SPEED = float(rospy.get_param("~max_speed", "0"))
 
         addresses = str(rospy.get_param("~addresses", "128")).split(",")
