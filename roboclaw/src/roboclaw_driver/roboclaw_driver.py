@@ -1181,3 +1181,11 @@ def Open(comport, rate):
     global port
     port = serial.Serial(comport, baudrate=rate, timeout=0.1, interCharTimeout=0.01)
     return
+
+
+def IsOpened():
+    try:
+        global port        
+        return port is not None
+    except NameError:
+        return False
