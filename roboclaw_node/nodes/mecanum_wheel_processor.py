@@ -7,7 +7,7 @@ from geometry_msgs.msg import Twist
 from watchdog import Watchdog
 
 
-
+WHEEL_RADIUS = None
 motor_pub = None 
 K=0.2
 vr,vl=0,0
@@ -44,15 +44,18 @@ if __name__ == '__main__':
 	try:
 		rospy.init_node('mecanum_wheel_processor')
 		rospy.Subscriber("cmd_vel", Twist, cmd_vel)
-		motor_pub = rospy.Publisher('cmd_motor', MotorData, queue_size=10)	   
+		motor_pub = rospy.Publisher('cmd_motors', SpeedData, queue_size=10)	  
+
 		rospy.loginfo("mecanum_wheel_processor: Starting node")	
 		
-		rate = rospy.get_param('~rate', 50)
+
+		rate = int( rospy.get_param('~rate', 10) )
+		WHEEL_RADIUS = float( rospy.get_param('~wheel_radius', 0.1) )
 		r = rospy.Rate(rate)
 		while not rospy.is_shutdown():
 			watchdog.check()
 			r.sleep()	
-		##rospy.spin()
+
 		rospy.loginfo("mecanum_wheel_processor: exit")
 
 	except rospy.ROSInterruptException as e: 
