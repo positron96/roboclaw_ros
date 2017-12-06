@@ -5,7 +5,7 @@
     <arg name="baud" default="115200"/>
     <arg name="addresses" default="128,129"/>
     <arg name="max_speed" default="0"/>
-    <arg name="ticks_per_rotation" default="663"/>
+    <arg name="ticks_per_rotation" default="2667"/>
     <arg name="base_width" default="1"/>
 
     <arg name="wheel_radius" default="0.2"/>
