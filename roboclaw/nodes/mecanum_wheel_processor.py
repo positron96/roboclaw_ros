@@ -29,7 +29,7 @@ def cmd_vel(data):
 	global WHEEL_RADIUS, Lx, Ly
 	global w1,w2,w3,w4
 	R = WHEEL_RADIUS
-	Lw = (Lx + Ly)*w
+	Lw = (Lx + Ly)*wz
 
 	w1 = (vx - vy - Lw) / R
 	w2 = (vx + vy + Lw) / R
