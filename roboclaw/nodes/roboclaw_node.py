@@ -148,21 +148,22 @@ class Node:
         i=0
         for addr in self.addresses:
             # convert radians per sec to ticks per sec
-            vr = int( arr[i]  * self.TICKS_PER_RADIAN )  
-            vl = int( arr[i+1]* self.TICKS_PER_RADIAN )
+            vr =  arr[i]  * self.TICKS_PER_RADIAN 
+            vl =  arr[i+1]* self.TICKS_PER_RADIAN 
 
             # clamp
             if self.MAX_SPEED != 0 :
                 if abs(vr) > self.MAX_SPEED :  vr = copysign(self.MAX_SPEED, vr)
-                if abs(vl) > self.MAX_SPEED :  vl = copysign(self.MAX_SPEED, vr)
+                if abs(vl) > self.MAX_SPEED :  vl = copysign(self.MAX_SPEED, vl)
 
+            vr, vl = int(vr), int(vl)
             # now send
             try:                
                 if vr is 0 and vl is 0:
                     roboclaw.ForwardM1(addr, 0)
                     roboclaw.ForwardM2(addr, 0)
                 else:
-                    roboclaw.SpeedM1M2(addr, vr, vl)
+                    roboclaw.SpeedM1M2(addr, vr,vl)
             except OSError as e:
                 rospy.logwarn("SpeedM1M2 OSError: %d", e.errno)
                 rospy.logdebug(e)
