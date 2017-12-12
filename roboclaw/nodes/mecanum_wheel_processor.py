@@ -15,7 +15,6 @@ from geometry_msgs.msg import Twist
 WHEEL_RADIUS = None
 motor_pub = None 
 Lx, Ly = None,None
-#K=0.2
 
 #watchdog = Watchdog(0.2, lambda : noSpeed()  )
 	
@@ -27,7 +26,6 @@ def cmd_vel(data):
 	wz = data.angular.z
 
 	global WHEEL_RADIUS, Lx, Ly
-	global w1,w2,w3,w4
 	R = WHEEL_RADIUS
 	Lw = (Lx + Ly)*wz
 
