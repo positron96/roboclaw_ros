@@ -102,7 +102,7 @@ class Node:
         while not rospy.is_shutdown():
 
             if (rospy.get_rostime() - self.last_set_speed_time).to_sec() > self.topic_timeout :
-                rospy.loginfo("Did not get command for specified time, stopping")
+                rospy.logdebug("Did not get command for specified time, stopping")
 
                 self.cmd([0,0]*len(self.addresses) )
 
@@ -148,22 +148,22 @@ class Node:
         i=0
         for addr in self.addresses:
             # convert radians per sec to ticks per sec
-            vr =  arr[i]  * self.TICKS_PER_RADIAN 
-            vl =  arr[i+1]* self.TICKS_PER_RADIAN 
+            v1 =  arr[i]  * self.TICKS_PER_RADIAN 
+            v2 =  arr[i+1]* self.TICKS_PER_RADIAN 
 
             # clamp
             if self.MAX_SPEED != 0 :
-                if abs(vr) > self.MAX_SPEED :  vr = copysign(self.MAX_SPEED, vr)
-                if abs(vl) > self.MAX_SPEED :  vl = copysign(self.MAX_SPEED, vl)
+                if abs(v1) > self.MAX_SPEED :  v1 = copysign(self.MAX_SPEED, v1)
+                if abs(v2) > self.MAX_SPEED :  v2 = copysign(self.MAX_SPEED, v2)
 
-            vr, vl = int(vr), int(vl)
+            v1, v2 = int(v1), int(v2)
             # now send
             try:                
-                if vr is 0 and vl is 0:
+                if v1 == 0 and v2 == 0:
                     roboclaw.ForwardM1(addr, 0)
                     roboclaw.ForwardM2(addr, 0)
                 else:
-                    roboclaw.SpeedM1M2(addr, vr,vl)
+                    roboclaw.SpeedM1M2(addr, v1,v2)
             except OSError as e:
                 rospy.logwarn("SpeedM1M2 OSError: %d", e.errno)
                 rospy.logdebug(e)
@@ -174,7 +174,7 @@ class Node:
 
     # TODO: Need to make this work when more than one error is raised
     def check_vitals(self, stat):
-        rospy.loginfo("checking vitals")
+        rospy.logdebug("checking vitals")
         for addr in self.addresses:
             try:
                 status = roboclaw.ReadError(addr)[1]
