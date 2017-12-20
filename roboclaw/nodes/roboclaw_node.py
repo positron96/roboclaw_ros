@@ -85,10 +85,9 @@ class Node:
             roboclaw.ResetEncoders(addr)
 
         self.last_set_speed_time = rospy.get_rostime()
-
-        rospy.Subscriber("cmd_motors", MotorSpeeds, self.cmd_motors_callback)
-
-        rospy.sleep(1)
+        
+        rospy.Subscriber("/cmd_motors", MotorSpeeds, self.cmd_motors_callback, queue_size=1)
+    
 
         rospy.logdebug("dev %s", dev_name)
         rospy.logdebug("baud %d", baud_rate)
