@@ -35,7 +35,7 @@ def cmd_vel(data):
 	w4 = (vx - vy + Lw) / R
 
 	v = MotorSpeeds()
-	v.Speeds = [w1,w2,w3,w4]
+	v.Speeds = [w3,w1,w4,w2]
 	motor_pub.publish( v )
 	#watchdog.kick();
 	
