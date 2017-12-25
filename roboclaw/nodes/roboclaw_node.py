@@ -162,7 +162,7 @@ class Node:
                     roboclaw.ForwardM1(addr, 0)
                     roboclaw.ForwardM2(addr, 0)
                 else:
-                    roboclaw.SpeedM1M2(addr, v1,v2)
+                    roboclaw.SpeedAccelM1M2(addr, 10000, v1,v2)
             except OSError as e:
                 rospy.logwarn("SpeedM1M2 OSError: %d", e.errno)
                 rospy.logdebug(e)
